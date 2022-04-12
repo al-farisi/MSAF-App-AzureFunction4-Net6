@@ -15,10 +15,15 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MSAF.App.Services\MSAF.App.Services.csproj" />
+    <ProjectReference Include="..\MSAF.App.Utility\MSAF.App.Utility.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
     <None Update="local.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

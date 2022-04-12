@@ -4,6 +4,9 @@ namespace MSAF.App.Functions.SmokeTest
 {
     public class SmokeTestResponseModel
     {
+        [JsonProperty("app_name")]
+        public string? AppName { get; set; }
+
         [JsonProperty("data")]
         public string? Data { get; set; }
 
