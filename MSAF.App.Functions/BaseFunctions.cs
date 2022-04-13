@@ -18,6 +18,7 @@ namespace MSAF.App.Functions
         protected async Task<HttpResponseData> HandleSuccess(HttpRequestData req, object data)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "application/json");
             await response.WriteStringAsync(JsonConvert.SerializeObject(data));
 
             return response;
@@ -31,6 +32,7 @@ namespace MSAF.App.Functions
             };
 
             var response = req.CreateResponse(HttpStatusCode.InternalServerError);
+            response.Headers.Add("Content-Type", "application/json");
             await response.WriteStringAsync(JsonConvert.SerializeObject(data));
 
             return response;
