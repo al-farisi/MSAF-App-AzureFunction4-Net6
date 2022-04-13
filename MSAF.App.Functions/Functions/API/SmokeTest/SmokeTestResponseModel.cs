@@ -7,6 +7,9 @@ namespace MSAF.App.Functions.SmokeTest
         [JsonProperty("app_name")]
         public string? AppName { get; set; }
 
+        [JsonProperty("token")]
+        public string? Token { get; set; }
+
         [JsonProperty("data")]
         public string? Data { get; set; }
 

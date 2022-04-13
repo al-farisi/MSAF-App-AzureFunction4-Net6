@@ -1,11 +1,15 @@
 using AutoMapper;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using MSAF.App.Functions.Helpers;
 using MSAF.App.Services.SmokeTest;
 using MSAF.App.Utility;
+using Newtonsoft.Json;
+using System.Net;
 
 namespace MSAF.App.Functions.SmokeTest
 {
@@ -35,16 +39,22 @@ namespace MSAF.App.Functions.SmokeTest
         }
 
         [Function("SmokeTestApiFunction-AllLayer")]
+        [OpenApiOperation(operationId: "SmokeTestApiFunction-AllLayer", tags: new[] { _basePath + "/all-layer" })]
+        [OpenApiParameter(name: "Token", In = ParameterLocation.Header, Required = true, Type = typeof(string), Description = "Token to test the functions")]
+        [OpenApiParameter(name: "data", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "Data to test the functions")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "OK response")]
         public async Task<HttpResponseData> TestAllLayer([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = _basePath + "/all-layer/{data:alpha}")] HttpRequestData req, string data)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
             try
             {
+                var headers = req.Headers;
+
                 var response = await _service.GetTestDataAsync(data);
                 var responseModel = _mapper.Map<SmokeTestResponseModel>(response);
                 responseModel.AppName = _appSettings.AppName;
-
+                responseModel.Token = headers.TryGetValues("Token", out var token) ? token.FirstOrDefault() : string.Empty;
                 //var httpResponse = await _httpHelper.CreateSuccessfulHttpResponse(req, responseModel);
                 //return httpResponse;
 
