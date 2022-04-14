@@ -18,6 +18,7 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MSAF.App.ApiClient\MSAF.App.ApiClient.csproj" />
     <ProjectReference Include="..\MSAF.App.Services\MSAF.App.Services.csproj" />
     <ProjectReference Include="..\MSAF.App.Utility\MSAF.App.Utility.csproj" />
   </ItemGroup>

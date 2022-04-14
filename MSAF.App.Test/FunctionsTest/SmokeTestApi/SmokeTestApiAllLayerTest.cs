@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using MSAF.App.ApiClient.ApiClients.Functions2Api;
 using MSAF.App.DAL.SmokeTest;
 using MSAF.App.Functions.Functions.API.SmokeTest;
 using MSAF.App.Functions.SmokeTest;
@@ -106,7 +107,10 @@ namespace MSAF.App.Test.FunctionsTest.SmokeTestApi
             var mockSmokeTestService = new Mock<ISmokeTestService>();
             mockSmokeTestService.Setup(s => s.GetTestDataAsync(data)).ReturnsAsync(serviceResult);
 
-            SmokeTestApiFunction fn = new SmokeTestApiFunction(mockAppSettings.Object, mockLoggerFactory.Object, mapper, mockSmokeTestService.Object);
+            var mockApiClient = new Mock<IFunction2ApiClient>();
+            mockApiClient.Setup(s => s.RunFn2Api()).ReturnsAsync(new Function2ApiResponse() { IsFnOK = true });
+
+            SmokeTestApiFunction fn = new SmokeTestApiFunction(mockAppSettings.Object, mockLoggerFactory.Object, mapper, mockSmokeTestService.Object, mockApiClient.Object);
 
             //act
             var result = await fn.TestAllLayer(request, data);
@@ -125,6 +129,48 @@ namespace MSAF.App.Test.FunctionsTest.SmokeTestApi
             Assert.Equal(expectedResult.IsServiceOK, responseBodyObj.IsServiceOK);
             Assert.Equal(expectedResult.IsRepositoryOK, responseBodyObj.IsRepositoryOK);
             Assert.Equal(expectedResult.IsMapperOK, responseBodyObj.IsMapperOK);
+        }
+
+        [Fact]
+        public async Task SmokeTestApiOverApiClient_ValidData_ReturnOk()
+        {
+            // arrange
+            var context = new Mock<FunctionContext>();
+            var request = new FakeHttpRequestData(
+                            context.Object,
+                            new Uri("https://stackoverflow.com"));
+
+
+            var logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(logger);
+
+            var mapper = new MapperConfiguration(mc =>
+            {
+            }).CreateMapper();
+
+            var mockAppSettings = new Mock<IOptions<AppSettings>>();
+
+            var mockSmokeTestService = new Mock<ISmokeTestService>();
+
+            var mockApiClient = new Mock<IFunction2ApiClient>();
+            mockApiClient.Setup(s => s.RunFn2Api()).ReturnsAsync(new Function2ApiResponse() { IsFnOK = true });
+
+            SmokeTestApiFunction fn = new SmokeTestApiFunction(mockAppSettings.Object, mockLoggerFactory.Object, mapper, mockSmokeTestService.Object, mockApiClient.Object);
+
+            //act
+            var result = await fn.TestOverApiClient(request);
+            result.Body.Position = 0;
+
+            //assert
+            var reader = new StreamReader(result.Body);
+            var responseBody = await reader.ReadToEndAsync();
+            var responseBodyObj = JsonConvert.DeserializeObject<Function2ApiResponse>(responseBody);
+
+            Assert.NotNull(result);
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.True(responseBodyObj.IsFnOK);
         }
     }
 }

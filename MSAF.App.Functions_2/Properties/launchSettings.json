@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MSAF.App.Functions_2": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 7074"
+    }
+  }
+}

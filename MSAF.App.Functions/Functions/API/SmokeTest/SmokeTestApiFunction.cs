@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using MSAF.App.ApiClient.ApiClients.Functions2Api;
 using MSAF.App.Services.SmokeTest;
 using MSAF.App.Utility;
 using System.Net;
@@ -19,6 +20,7 @@ namespace MSAF.App.Functions.SmokeTest
         private readonly IMapper _mapper;
         //private readonly IHttpHelper _httpHelper;
         private readonly ISmokeTestService _service;
+        private readonly IFunction2ApiClient _apiClient;
 
         protected readonly AppSettings _appSettings;
 
@@ -27,13 +29,15 @@ namespace MSAF.App.Functions.SmokeTest
             ILoggerFactory loggerFactory,
             IMapper mapper,
             //IHttpHelper httpHelper,
-            ISmokeTestService service) : base(options)
+            ISmokeTestService service,
+            IFunction2ApiClient apiClient) : base(options)
         {
             _appSettings = options.Value;
             _logger = loggerFactory.CreateLogger<SmokeTestApiFunction>();
             _mapper = mapper;
             //_httpHelper = httpHelper;
             _service = service;
+            _apiClient = apiClient;
         }
 
         [Function("SmokeTestApiFunction-AllLayer")]
@@ -57,6 +61,27 @@ namespace MSAF.App.Functions.SmokeTest
                 //return httpResponse;
 
                 return await HandleSuccess(req, responseModel);
+            }
+            catch (Exception ex)
+            {
+                return await HandleException(req, ex.Message);
+            }
+        }
+
+        [Function("SmokeTestApiFunction-OverApiClient")]
+        [OpenApiOperation(operationId: "SmokeTestApiFunction-OverApiClient", tags: new[] { _basePath + "/over-apiclient" })]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "OK response")]
+        public async Task<HttpResponseData> TestOverApiClient([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = _basePath + "/over-apiclient")] HttpRequestData req)
+        {
+            _logger.LogInformation("C# HTTP trigger function processed a request.");
+
+            try
+            {
+                var headers = req.Headers;
+
+                var response = await _apiClient.RunFn2Api();
+
+                return await HandleSuccess(req, response);
             }
             catch (Exception ex)
             {

@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MSAF.App.ApiClient.ApiClients.Functions2Api;
 using MSAF.App.DAL.SmokeTest;
 using MSAF.App.Functions.Helpers;
 using MSAF.App.Functions.SmokeTest;
@@ -47,6 +48,11 @@ var host = new HostBuilder()
             //     .LoadConfiguration(builder => builder.LogFactory.AutoShutdown = false);
             loggingBuilder.AddNLog(new NLogProviderOptions() { ShutdownOnDispose = true });
             #endregion
+        });
+        s.AddHttpClient<IFunction2ApiClient, Function2ApiClient>((provider, client) =>
+        {
+            client.BaseAddress = new Uri("http://localhost:7074/api/");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
         s.AddSingleton(mapper);
         s.AddScoped<IHttpHelper, HttpHelper>();
