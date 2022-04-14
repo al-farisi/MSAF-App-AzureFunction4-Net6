@@ -19,7 +19,7 @@ namespace MSAF.App.Functions.SmokeTest
 
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
-        private readonly IHttpHelper _httpHelper;
+        //private readonly IHttpHelper _httpHelper;
         private readonly ISmokeTestService _service;
 
         protected readonly AppSettings _appSettings;
@@ -28,13 +28,13 @@ namespace MSAF.App.Functions.SmokeTest
             IOptions<AppSettings> options,
             ILoggerFactory loggerFactory,
             IMapper mapper,
-            IHttpHelper httpHelper,
+            //IHttpHelper httpHelper,
             ISmokeTestService service) : base(options)
         {
             _appSettings = options.Value;
             _logger = loggerFactory.CreateLogger<SmokeTestApiFunction>();
             _mapper = mapper;
-            _httpHelper = httpHelper;
+            //_httpHelper = httpHelper;
             _service = service;
         }
 
@@ -45,7 +45,7 @@ namespace MSAF.App.Functions.SmokeTest
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "OK response")]
         public async Task<HttpResponseData> TestAllLayer([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = _basePath + "/all-layer/{data:alpha}")] HttpRequestData req, string data)
         {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
+            //_logger.LogInformation("C# HTTP trigger function processed a request.");
 
             try
             {

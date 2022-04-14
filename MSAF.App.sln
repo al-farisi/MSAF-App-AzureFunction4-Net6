@@ -15,9 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unit Test", "Unit Test", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Class Libraries", "Class Libraries", "{C8F58F91-CFA5-45F5-AAC1-874DF89DF929}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSAF.App.Test", "MSAF.App.Test\MSAF.App.Test.csproj", "{2FC5D356-CCE9-4A70-92A1-D86CFA424CB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSAF.App.Test", "MSAF.App.Test\MSAF.App.Test.csproj", "{2FC5D356-CCE9-4A70-92A1-D86CFA424CB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSAF.App.TestHelpers", "MSAF.App.TestHelpers\MSAF.App.TestHelpers.csproj", "{7B10025F-1DCC-442D-9BD0-3D03B209673C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSAF.App.TestHelpers", "MSAF.App.TestHelpers\MSAF.App.TestHelpers.csproj", "{7B10025F-1DCC-442D-9BD0-3D03B209673C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
