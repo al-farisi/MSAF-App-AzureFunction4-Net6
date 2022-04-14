@@ -1,8 +1,19 @@
 {
-    "IsEncrypted": false,
-    "Values": {
-      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-      "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-      "AppName":  "MSAF.App",
-    }
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "AppName": "MSAF.App",
+    "NLog:autoreload": "True",
+    "NLog:throwConfigExceptions": "True",
+    "NLog:extensions:0:assembly": "NLog.Extensions.Logging",
+    "NLog:variables:Layout": "${custom-datetime}|${level:uppercase=true}|${logger}|${message}|${exception:format=tostring:innerFormat=tostring:maxInnerExceptionLevel=1000}",
+    "NLog:targets:logblobstorage:type": "AzureBlobStorage",
+    "NLog:targets:logblobstorage:layout": "${Layout}",
+    "NLog:targets:logblobstorage:connectionString": "${StorageConnectionString}",
+    "NLog:targets:logblobstorage:container": "api-core-logs",
+    "NLog:targets:logblobstorage:blobName": "${custom-blobname}",
+    "NLog:rules:0:logger": "*",
+    "NLog:rules:0:level": "Error"
+  }
 }

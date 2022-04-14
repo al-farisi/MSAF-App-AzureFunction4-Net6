@@ -8,6 +8,10 @@ using MSAF.App.Functions.Helpers;
 using MSAF.App.Functions.SmokeTest;
 using MSAF.App.Services.SmokeTest;
 using MSAF.App.Utility;
+using MSAF.App.Utility.NLogLayout;
+using NLog;
+using NLog.Extensions.Logging;
+using System.Reflection;
 
 var mapper = new MapperConfiguration(mc =>
 {
@@ -23,6 +27,26 @@ var host = new HostBuilder()
         .Configure<IConfiguration>((settings, configuration) =>
         {
             configuration.Bind(settings);
+        });
+        s.AddLogging((loggingBuilder) =>
+        {
+            var serviceProvider = loggingBuilder.Services.BuildServiceProvider();
+            var configuration = serviceProvider.GetService<IConfiguration>();
+            //var assembly = Assembly.Load("NLog.Extensions.AzureBlobStorage");
+
+            #region NLog setup
+            LogManager.ThrowExceptions = true;
+            LogManager.ThrowConfigExceptions = true;
+            //LogManager.Setup()
+            //     .SetupExtensions(s => s.AutoLoadAssemblies(false)
+            //        //.RegisterAssembly(assembly)
+            //        //.RegisterLayoutRenderer("custom-blobname", typeof(CustomBlobNameRenderer))
+            //        .RegisterLayoutRenderer("custom-datetime", typeof(CustomDateTimeRenderer))
+            //     )
+            //     .LoadConfigurationFromSection(configuration)
+            //     .LoadConfiguration(builder => builder.LogFactory.AutoShutdown = false);
+            loggingBuilder.AddNLog(new NLogProviderOptions() { ShutdownOnDispose = true });
+            #endregion
         });
         s.AddSingleton(mapper);
         s.AddScoped<IHttpHelper, HttpHelper>();
