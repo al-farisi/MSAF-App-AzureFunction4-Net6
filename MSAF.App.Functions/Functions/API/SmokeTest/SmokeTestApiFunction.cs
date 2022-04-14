@@ -5,10 +5,8 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using MSAF.App.Functions.Helpers;
 using MSAF.App.Services.SmokeTest;
 using MSAF.App.Utility;
-using Newtonsoft.Json;
 using System.Net;
 
 namespace MSAF.App.Functions.SmokeTest
@@ -45,7 +43,7 @@ namespace MSAF.App.Functions.SmokeTest
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "OK response")]
         public async Task<HttpResponseData> TestAllLayer([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = _basePath + "/all-layer/{data:alpha}")] HttpRequestData req, string data)
         {
-            //_logger.LogInformation("C# HTTP trigger function processed a request.");
+            _logger.LogInformation("C# HTTP trigger function processed a request.");
 
             try
             {

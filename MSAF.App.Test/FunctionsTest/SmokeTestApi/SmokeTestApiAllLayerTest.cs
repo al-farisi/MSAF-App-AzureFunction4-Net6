@@ -84,11 +84,12 @@ namespace MSAF.App.Test.FunctionsTest.SmokeTestApi
                 IsRepositoryOK = true,
                 IsServiceOK = true,
                 Token = token
-            };            
+            };
 
             var logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(logger);
 
             var mapper = new MapperConfiguration(mc =>
             {
