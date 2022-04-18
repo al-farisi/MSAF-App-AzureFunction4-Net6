@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using MSAF.App.ApiClient.ApiClients.Functions2Api;
+using MSAF.App.ApiClient.ApiClients.ODataApi;
 using MSAF.App.DAL.SmokeTest;
 using MSAF.App.Functions.Functions.API.SmokeTest;
 using MSAF.App.Functions.SmokeTest;
@@ -22,9 +23,55 @@ using Xunit;
 
 namespace MSAF.App.Test.FunctionsTest.SmokeTestApi
 {
+    public class SmokeTestApiSetup
+    {
+        public Mock<IOptions<AppSettings>> MockAppSettings { get; set; }
+        public Mock<ILoggerFactory> MockLoggerFactory { get; set; }
+        public Mock<ISmokeTestService> MockSmokeTestService { get; set; }
+        public Mock<IFunction2ApiClient> MockFunction2ApiClient { get; set; }
+        public Mock<IODataApiClient> MockODataApiClient { get; set; }
+        public IMapper Mapper { get; set; }
+    }
+
     public class SmokeTestApiAllLayerTest
     {
         private const string _appName = "MSAF.App.Test";
+
+        private SmokeTestApiSetup GetSetup()
+        {
+            var mapper = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new SmokeTestMapperProfile());
+            }).CreateMapper();
+
+            var logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(logger);
+
+            var mockAppSettings = new Mock<IOptions<AppSettings>>();
+            var appSettings = new AppSettings()
+            {
+                AppName = _appName
+            };
+            mockAppSettings.Setup(p => p.Value).Returns(appSettings);
+
+            var mockSmokeTestService = new Mock<ISmokeTestService>();
+
+            var mockApiClient = new Mock<IFunction2ApiClient>();
+
+            var mockODataApiClient = new Mock<IODataApiClient>();
+
+            return new SmokeTestApiSetup()
+            {
+                MockLoggerFactory = mockLoggerFactory,
+                MockAppSettings = mockAppSettings,
+                MockFunction2ApiClient = mockApiClient,
+                MockSmokeTestService = mockSmokeTestService,
+                MockODataApiClient = mockODataApiClient,
+                Mapper = mapper,
+            };
+        }
 
         [Fact]
         public async Task Function1_ValidData_ReturnOk()
@@ -87,30 +134,17 @@ namespace MSAF.App.Test.FunctionsTest.SmokeTestApi
                 Token = token
             };
 
-            var logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+            var setup = GetSetup();
+            setup.MockSmokeTestService.Setup(s => s.GetTestDataAsync(data)).ReturnsAsync(serviceResult);
+            setup.MockFunction2ApiClient.Setup(s => s.RunFn2Api()).ReturnsAsync(new Function2ApiResponse() { IsFnOK = true });
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(logger);
-
-            var mapper = new MapperConfiguration(mc =>
-            {
-                mc.AddProfile(new SmokeTestMapperProfile());
-            }).CreateMapper();
-
-            var mockAppSettings = new Mock<IOptions<AppSettings>>();
-            var appSettings = new AppSettings()
-            {
-                AppName = _appName
-            };
-            mockAppSettings.Setup(p => p.Value).Returns(appSettings);
-
-            var mockSmokeTestService = new Mock<ISmokeTestService>();
-            mockSmokeTestService.Setup(s => s.GetTestDataAsync(data)).ReturnsAsync(serviceResult);
-
-            var mockApiClient = new Mock<IFunction2ApiClient>();
-            mockApiClient.Setup(s => s.RunFn2Api()).ReturnsAsync(new Function2ApiResponse() { IsFnOK = true });
-
-            SmokeTestApiFunction fn = new SmokeTestApiFunction(mockAppSettings.Object, mockLoggerFactory.Object, mapper, mockSmokeTestService.Object, mockApiClient.Object);
+            SmokeTestApiFunction fn = new SmokeTestApiFunction(
+                setup.MockAppSettings.Object, 
+                setup.MockLoggerFactory.Object, 
+                setup.Mapper, 
+                setup.MockSmokeTestService.Object, 
+                setup.MockFunction2ApiClient.Object,
+                setup.MockODataApiClient.Object);
 
             //act
             var result = await fn.TestAllLayer(request, data);
@@ -140,24 +174,16 @@ namespace MSAF.App.Test.FunctionsTest.SmokeTestApi
                             context.Object,
                             new Uri("https://stackoverflow.com"));
 
+            var setup = GetSetup();
+            setup.MockFunction2ApiClient.Setup(s => s.RunFn2Api()).ReturnsAsync(new Function2ApiResponse() { IsFnOK = true });
 
-            var logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
-
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(logger);
-
-            var mapper = new MapperConfiguration(mc =>
-            {
-            }).CreateMapper();
-
-            var mockAppSettings = new Mock<IOptions<AppSettings>>();
-
-            var mockSmokeTestService = new Mock<ISmokeTestService>();
-
-            var mockApiClient = new Mock<IFunction2ApiClient>();
-            mockApiClient.Setup(s => s.RunFn2Api()).ReturnsAsync(new Function2ApiResponse() { IsFnOK = true });
-
-            SmokeTestApiFunction fn = new SmokeTestApiFunction(mockAppSettings.Object, mockLoggerFactory.Object, mapper, mockSmokeTestService.Object, mockApiClient.Object);
+            SmokeTestApiFunction fn = new SmokeTestApiFunction(
+                setup.MockAppSettings.Object,
+                setup.MockLoggerFactory.Object,
+                setup.Mapper,
+                setup.MockSmokeTestService.Object,
+                setup.MockFunction2ApiClient.Object,
+                setup.MockODataApiClient.Object);
 
             //act
             var result = await fn.TestOverApiClient(request);

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MSAF.App.ApiClient.ApiClients.Functions2Api;
+using MSAF.App.ApiClient.ApiClients.ODataApi;
 using MSAF.App.Services.SmokeTest;
 using MSAF.App.Utility;
 using System.Net;
@@ -21,6 +22,7 @@ namespace MSAF.App.Functions.SmokeTest
         //private readonly IHttpHelper _httpHelper;
         private readonly ISmokeTestService _service;
         private readonly IFunction2ApiClient _apiClient;
+        private readonly IODataApiClient _oDataApiClient;
 
         protected readonly AppSettings _appSettings;
 
@@ -30,7 +32,8 @@ namespace MSAF.App.Functions.SmokeTest
             IMapper mapper,
             //IHttpHelper httpHelper,
             ISmokeTestService service,
-            IFunction2ApiClient apiClient) : base(options)
+            IFunction2ApiClient apiClient,
+            IODataApiClient oDataApiClient) : base(options)
         {
             _appSettings = options.Value;
             _logger = loggerFactory.CreateLogger<SmokeTestApiFunction>();
@@ -38,6 +41,7 @@ namespace MSAF.App.Functions.SmokeTest
             //_httpHelper = httpHelper;
             _service = service;
             _apiClient = apiClient;
+            _oDataApiClient = oDataApiClient;
         }
 
         [Function("SmokeTestApiFunction-AllLayer")]
@@ -80,6 +84,28 @@ namespace MSAF.App.Functions.SmokeTest
                 var headers = req.Headers;
 
                 var response = await _apiClient.RunFn2Api();
+
+                return await HandleSuccess(req, response);
+            }
+            catch (Exception ex)
+            {
+                return await HandleException(req, ex.Message);
+            }
+        }
+
+        [Function("SmokeTestApiFunction-GetWeatherForecastODataBySummary")]
+        [OpenApiOperation(operationId: "SmokeTestApiFunction-GetWeatherForecastODataBySummary", tags: new[] { _basePath + "/weather-forecast-odata" })]
+        [OpenApiParameter(name: "summary", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "Data to filter the weather")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "OK response")]
+        public async Task<HttpResponseData> GetWeatherForecastODataBySummary([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = _basePath + "/weather-forecast-odata/{summary:alpha}")] HttpRequestData req, string summary)
+        {
+            _logger.LogInformation("C# HTTP trigger function processed a request.");
+
+            try
+            {
+                var headers = req.Headers;
+
+                var response = await _oDataApiClient.GetWeatherForecastBySummary(summary);
 
                 return await HandleSuccess(req, response);
             }
