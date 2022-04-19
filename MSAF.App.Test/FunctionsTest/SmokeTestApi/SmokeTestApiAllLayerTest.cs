@@ -198,5 +198,54 @@ namespace MSAF.App.Test.FunctionsTest.SmokeTestApi
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.True(responseBodyObj.IsFnOK);
         }
+
+        [Fact]
+        public async Task SmokeTestApiGetWeatherForecastODataBySummary_ValidData_ReturnOk()
+        {
+            // arrange
+            var context = new Mock<FunctionContext>();
+            var request = new FakeHttpRequestData(
+                            context.Object,
+                            new Uri("https://stackoverflow.com"));
+            string summary = "Hot";
+
+            var expectedResults = new List<ODataApiResponse>();
+            var result1 = new ODataApiResponse()
+            {
+                Date = DateTime.Now,
+                Summary = summary,
+                TemperatureC = 30,
+                TemperatureF = 86
+            };
+            expectedResults.Add(result1);
+
+            var setup = GetSetup();
+            setup.MockODataApiClient.Setup(s => s.GetWeatherForecastBySummary(summary)).ReturnsAsync(expectedResults);
+
+            SmokeTestApiFunction fn = new SmokeTestApiFunction(
+                setup.MockAppSettings.Object,
+                setup.MockLoggerFactory.Object,
+                setup.Mapper,
+                setup.MockSmokeTestService.Object,
+                setup.MockFunction2ApiClient.Object,
+                setup.MockODataApiClient.Object);
+
+            //act
+            var result = await fn.GetWeatherForecastODataBySummary(request, summary);
+            result.Body.Position = 0;
+
+            //assert
+            var reader = new StreamReader(result.Body);
+            var responseBody = await reader.ReadToEndAsync();
+            var responseBodyObj = JsonConvert.DeserializeObject<List<ODataApiResponse>>(responseBody);
+
+            Assert.NotNull(result);
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.True(responseBodyObj.Count == 1);
+            Assert.Equal(result1.Date, responseBodyObj[0].Date);
+            Assert.Equal(result1.Summary, responseBodyObj[0].Summary);
+            Assert.Equal(result1.TemperatureC, responseBodyObj[0].TemperatureC);
+            Assert.Equal(result1.TemperatureF, responseBodyObj[0].TemperatureF);
+        }
     }
 }
