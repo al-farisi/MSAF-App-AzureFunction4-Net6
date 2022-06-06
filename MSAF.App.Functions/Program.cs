@@ -14,6 +14,7 @@ using MSAF.App.Utility.NLogLayout;
 using NLog;
 using NLog.Extensions.Logging;
 using System.Reflection;
+using FluentValidation;
 
 var mapper = new MapperConfiguration(mc =>
 {
@@ -21,7 +22,10 @@ var mapper = new MapperConfiguration(mc =>
 }).CreateMapper();
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults(worker => worker.UseNewtonsoftJson())
+    .ConfigureFunctionsWorkerDefaults(worker =>
+        {
+            worker.UseNewtonsoftJson();
+        })
     .ConfigureOpenApi()
     .ConfigureServices(s =>
     {
@@ -61,9 +65,12 @@ var host = new HostBuilder()
             client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
         s.AddSingleton(mapper);
+
+        //s.AddValidatorsFromAssembly(typeof(SmokeTestValidatorRequestModel).Assembly);
+
         s.AddScoped<IHttpHelper, HttpHelper>();
         s.AddScoped<ISmokeTestService, SmokeTestService>();
-        s.AddScoped<ISmokeTestRepo, SmokeTestRepo>();
+        s.AddScoped<ISmokeTestRepo, SmokeTestRepo>();        
     })
     .Build();
 

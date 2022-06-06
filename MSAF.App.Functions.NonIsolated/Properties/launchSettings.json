@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MSAF.App.Functions.NonIsolated": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7142",
+      "launchBrowser": false
+    }
+  }
+}

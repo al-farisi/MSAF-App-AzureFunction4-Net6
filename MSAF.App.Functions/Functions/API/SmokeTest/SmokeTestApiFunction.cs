@@ -72,6 +72,31 @@ namespace MSAF.App.Functions.SmokeTest
             }
         }
 
+        [Function("SmokeTestApiFunction-Validator")]
+        [OpenApiOperation(operationId: "SmokeTestApiFunction-Validator", tags: new[] { _basePath + "/validator" })]
+        [OpenApiParameter(name: "Token", In = ParameterLocation.Header, Required = true, Type = typeof(string), Description = "Token to test the functions")]
+        //[OpenApiRequestBody("application/json", typeof(SmokeTestValidatorRequestModel), Description = "request", Required = true)]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "OK response")]
+        public async Task<HttpResponseData> TestValidator([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = _basePath + "/validator")] HttpRequestData req)
+        {
+            _logger.LogInformation("C# HTTP trigger function processed a request.");
+
+            try
+            {
+                var headers = req.Headers;
+
+                var request = await req.ReadFromJsonAsync<SmokeTestValidatorRequestModel>();
+
+                var response = "Data is Valid";
+
+                return await HandleSuccess(req, response);
+            }
+            catch (Exception ex)
+            {
+                return await HandleException(req, ex.Message);
+            }
+        }
+
         [Function("SmokeTestApiFunction-OverApiClient")]
         [OpenApiOperation(operationId: "SmokeTestApiFunction-OverApiClient", tags: new[] { _basePath + "/over-apiclient" })]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "OK response")]
